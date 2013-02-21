@@ -150,6 +150,13 @@ class MapperBase(Base):
         instance.__document__ = database[_id]
         return instance
 
+    @classmethod
+    def exists(cls, _id, database=None):
+        if database is None:
+            database = getattr(cls, '__database__', get_database())
+        instance = cls(_id=_id)
+        return instance._id in database
+
     def put(self, database=None):
         if database is None:
             database = getattr(self, '__database__', get_database())

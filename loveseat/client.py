@@ -174,6 +174,14 @@ class Database(object):
         document = self[_id]
         document.resource.delete(params={'rev': document['_rev']})
 
+    def __contains__(self, _id):
+        resource = self.resource[_id]
+        try:
+            resource.head()
+        except requests.HTTPError:
+            return False
+        return True
+
     def changes(self, **params):
         resource = self.resource['_changes']
         feed = params.get('feed', '')
