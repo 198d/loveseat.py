@@ -170,6 +170,20 @@ class Database(object):
         document = self[_id]
         document.resource.delete(params={'rev': document['_rev']})
 
+    def changes(self, **params):
+        resource = self.resource['_changes']
+        feed = params.get('feed', '')
+        if feed == 'continuous':
+            response = resource.get(params=params, stream=True)
+            def changes():
+                for line in response.iter_lines(chunk_size=1):
+                    line = line.decode('UTF-8')
+                    if line:
+                        yield json.loads(str(line))
+            return changes()
+        response = resource.get(params=params)
+        return response.json()
+
     def __str__(self):
         return '<Database name={}>'.format(self.name)
     __repr__ = __str__
