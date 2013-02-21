@@ -141,9 +141,8 @@ class Server(object):
 
 
     def __str__(self):
-        return '<Server host={} port={} username={} password={} ssl={} ' \
-            'uuids={}>'.format(self.host, self.port, self.username,
-            self.password, self.ssl, self.uuids)
+        return '<Server host={} port={} username={} password={} ssl={}>'.format(
+            self.host, self.port, self.username, self.password, self.ssl)
     __repr__ = __str__
 
 
