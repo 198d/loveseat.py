@@ -160,6 +160,12 @@ class MapperBase(Base):
         return instance
 
     @classmethod
+    def wrap(cls, document):
+        instance = cls()
+        instance.__document__ = Document(document)
+        return instance
+
+    @classmethod
     def exists(cls, _id, database=None):
         if database is None:
             database = getattr(cls, '__database__', get_database())
