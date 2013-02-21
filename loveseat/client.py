@@ -1,5 +1,9 @@
 import json
-from urllib.parse import urlunparse, quote
+try:
+    from urllib.parse import urlunparse, quote
+except ImportError:
+    from urlparse import urlunparse
+    from urllib import quote
 
 import requests
 
