@@ -172,6 +172,13 @@ class MapperBase(Base):
         instance = cls(_id=_id)
         return instance._id in database
 
+    def get_attachment(self, name, database=None):
+        if database is None:
+            database = getattr(self, '__database__', get_database())
+        resource = database.resource[self._id]
+        response = resource.get(name)
+        return response.content
+
     def put(self, database=None):
         if database is None:
             database = getattr(self, '__database__', get_database())
