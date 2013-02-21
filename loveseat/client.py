@@ -12,9 +12,15 @@ def initialize(host='localhost', port=5984, username=None, password=None,
         ssl=False, uuids=100, databases=[]):
     global _server, _databases
     _server = Server(host, port, username, password, ssl, uuids)
-    _databases = \
-        DatabasesDict(
-            map(lambda name: (name, _server[name]), databases))
+    mapper = lambda name: (name, _server[name])
+    if isinstance(databases, dict):
+        _databases = DatabasesDict(map(mapper, databases.keys()))
+        for name, mappers in databases.items():
+            database = _databases[name]
+            for mapper in mappers:
+                setattr(mapper, '__database__', database)
+    else:
+        _databases = DatabasesDict(map(mapper, databases))
     return _server, _databases
 
 
