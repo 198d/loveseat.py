@@ -1,17 +1,21 @@
-import sys
 import json
 from urllib.parse import urlunparse, quote
 
 import requests
 
 
+_server = None
+_databases = None
+
+
 def initialize(host='localhost', port=5984, username=None, password=None,
-        ssl=False, databases=[]):
-    server = Server(host, port, username, password, ssl)
-    databases = \
+        ssl=False, uuids=100, databases=[]):
+    global _server, _databases
+    _server = Server(host, port, username, password, ssl, uuids)
+    _databases = \
         DatabasesDict(
-            map(lambda name: (name, server[name]), databases))
-    return server, databases
+            map(lambda name: (name, _server[name]), databases))
+    return _server, _databases
 
 
 class DatabasesDict(dict):
@@ -19,6 +23,18 @@ class DatabasesDict(dict):
         return repr(list(self.values()))
     def __str__(self):
         return str(list(self.values()))
+
+
+def get_server():
+    return _server
+
+
+def get_database(name=None):
+    if name is None and len(_databases) == 1:
+        return list(_databases.values()).pop()
+    elif name is not None:
+        return _databases[name]
+    return None
 
 
 class Resource(object):
@@ -87,12 +103,13 @@ class Resource(object):
 
 class Server(object):
     def __init__(self, host='localhost', port=5984, username=None,
-            password=None, ssl=False):
+            password=None, ssl=False, uuids=100):
         self.host = host
         self.port = port
         self.username = username
         self.password = password
         self.ssl = ssl
+        self.uuid_cache = uuids
         self.resource = Resource(host=host, port=port, username=username,
             password=password, ssl=ssl)
 
@@ -106,6 +123,16 @@ class Server(object):
         resource = self.resource[name]
         database = type('Database', (Database,), {'resource': resource})
         return database(name)
+
+    @property
+    def uuids(self):
+        _uuids = getattr(self, '_uuids', [])
+        if not _uuids:
+            resource = self.resource['_uuids']
+            response = resource.get(params={'count': self.uuid_cache})
+            self._uuids = response.json()['uuids']
+        return self._uuids
+
 
     def __str__(self):
         return '<Server host={} port={} username={} password={} ssl={} ' \
