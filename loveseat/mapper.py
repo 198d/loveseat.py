@@ -1,5 +1,7 @@
 from datetime import datetime, date
 
+from requests import HTTPError
+
 from loveseat import Document, get_server, get_database
 
 
@@ -133,6 +135,7 @@ Base = MapperMeta('DocumentMapperBase', (object,), {})
 class MapperBase(Base):
     _id = Id()
     _rev = String()
+    _attachments = Dict()
 
     def __init__(self, **kwargs):
         self.__document__ = Document()
@@ -143,11 +146,17 @@ class MapperBase(Base):
                 self.__document__[key] = value
 
     @classmethod
-    def get(cls, _id, database=None):
+    def get(cls, _id, database=None, create=False):
         if database is None:
             database = getattr(cls, '__database__', get_database())
-        instance = cls()
-        instance.__document__ = database[_id]
+        instance = cls(_id=_id)
+        try:
+            instance.__document__ = database[instance._id]
+        except HTTPError as exception:
+            if create:
+                instance.put(database=database)
+            else:
+                raise exception
         return instance
 
     @classmethod
