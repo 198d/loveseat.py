@@ -134,6 +134,10 @@ class Server(object):
         database = type('Database', (Database,), {'resource': resource})
         return database(name)
 
+    def __delitem__(self, name):
+        resource = self.resource[name]
+        resource.delete()
+
     @property
     def uuids(self):
         _uuids = getattr(self, '_uuids', [])
