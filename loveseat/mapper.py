@@ -27,9 +27,12 @@ class Property(object):
         return None
 
     def __set__(self, instance, value):
-        if instance is None:
+        if instance is None
             return
-        instance.__document__[self.name] = self.to_json(value)
+        elif value is None:
+            instance.__document__[self.name] = None
+        else:
+            instance.__document__[self.name] = self.to_json(value)
 
     def to_python(self, value):
         return value
